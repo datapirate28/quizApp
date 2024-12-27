@@ -2,17 +2,6 @@ let selectedQuestionCount = "all"; // Default to "all" questions
 
 // Questions Array
 const allQuestions = [
-    {
-        question: "What was the primary reason William the Conqueror claimed the English throne in 1066?",
-        options: [
-            "He was the closest living relative of Edward the Confessor",
-            "Edward the Confessor allegedly promised him the throne",
-            "Harold Godwinson invited him to claim the throne",
-            "The Witan supported his claim"
-        ],
-        correct: 1
-    },
-
         {
             question: "What was the primary reason William the Conqueror claimed the English throne in 1066?",
             options: [
