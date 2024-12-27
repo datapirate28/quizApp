@@ -4,6 +4,8 @@
     padding: 0;
     box-sizing: border-box;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
 }
 
 body {
@@ -12,19 +14,26 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden; /* Prevent scrolling */
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
 }
 
-/* Lock the app to a phone resolution */
+/* App Container */
 #app-container {
-    width: 375px; /* Typical phone width */
-    height: 667px; /* Typical phone height */
+    width: 100%;
+    max-width: 375px;
+    height: 100vh;
+    max-height: 812px;
     background: #ffffff;
     border-radius: 20px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    position: relative;
+    margin: auto;
 }
 
 /* Logo Styles */
@@ -36,7 +45,7 @@ body {
 }
 
 .logo h1 {
-    font-size: 1.5rem;
+    font-size: clamp(1.2rem, 4vw, 1.5rem);
     color: #4361ee;
     font-weight: bold;
 }
@@ -44,18 +53,18 @@ body {
 /* Navigation Styles */
 .navbar {
     background: #ffffff;
-    padding: 0.5rem 0;
-    position: absolute;
-    width: 100%; /* Change this to match the app container */
-    max-width: 375px; /* Constrain the navbar to the app container width */
+    padding: 10px 0;
+    position: fixed;
     bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 375px;
     z-index: 1000;
     box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
     display: flex;
     justify-content: space-around;
-    margin: 0 auto; /* Center the navbar horizontally */
-    left: 0;
-    right: 0;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
 }
 
 .nav-link {
@@ -76,9 +85,10 @@ body {
 /* Content Sections */
 .section {
     display: none;
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto; /* Allow scrolling within the app */
+    height: calc(100vh - 120px);
+    padding: 15px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .section.active {
@@ -88,18 +98,18 @@ body {
 /* Home Section */
 .home-content {
     text-align: center;
-    padding: 40px 20px;
+    padding: 20px;
 }
 
 .home-title {
     color: #4361ee;
-    font-size: 1.8rem;
+    font-size: clamp(1.5rem, 5vw, 1.8rem);
     margin-bottom: 20px;
 }
 
 .home-description {
     color: #666;
-    font-size: 1rem;
+    font-size: clamp(0.9rem, 3vw, 1rem);
     line-height: 1.6;
 }
 
@@ -107,7 +117,7 @@ body {
 .study-guide {
     background: white;
     border-radius: 15px;
-    padding: 30px;
+    padding: 20px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
@@ -123,7 +133,7 @@ body {
     margin-bottom: 15px;
 }
 
-#questionText{
+#questionText {
     font-weight: bold;
     margin: 5px 0px 3px 0px;
 }
@@ -139,8 +149,6 @@ body {
     border-radius: 5px;
 }
 
-    
-
 .correct-answer {
     background: #e7f6e7;
     color: #2e7d32;
@@ -151,17 +159,18 @@ body {
 .quiz-container {
     max-width: 600px;
     margin: 20px auto;
-    background: #4361ee;
-    border-radius: 20px;
-    overflow: hidden;
-    color: white;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    color: #333;
 }
 
 .question-card {
     background: white;
     border-radius: 15px;
-    padding:0px;
-    margin: 0px;
+    padding: 20px;
+    margin: 0;
     color: #333;
 }
 
@@ -177,27 +186,40 @@ body {
     font-weight: bold;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
     width: 100%;
-    padding: 10px;
-    border: 2px solid #e0e0e0;
-    border-radius: 5px;
-    font-size: 16px;
+    height: 45px;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: clamp(0.9rem, 3vw, 1rem);
+    color: #333;
+    background: #f9f9f9;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
     border-color: #4361ee;
     outline: none;
+    background: #fff;
+    box-shadow: 0 0 5px rgba(67, 97, 238, 0.5);
 }
 
+/* Options and Buttons */
 .option {
     background: white;
     border: 2px solid #e0e0e0;
     border-radius: 10px;
-    padding: 15px;
-    margin: 10px 0;
+    padding: clamp(10px, 3vw, 15px);
+    margin: 8px 0;
     cursor: pointer;
     transition: all 0.3s ease;
+    font-size: clamp(0.9rem, 3vw, 1rem);
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .option:hover {
@@ -217,21 +239,28 @@ body {
 }
 
 .btn {
-    background: #4361ee;
+    background: #e63946;
     color: white;
     border: none;
-    padding: 15px 30px;
-    border-radius: 10px;
+    height: 45px;
+    padding: 10px 20px;
+    border-radius: 8px;
     cursor: pointer;
+    font-size: clamp(0.9rem, 3vw, 1rem);
+    font-weight: bold;
     width: 100%;
-    font-size: 16px;
-    margin-top: 20px;
+    transition: background 0.3s ease;
 }
 
+.btn:hover {
+    background: #d62839;
+}
+
+/* Progress Bar */
 .progress-bar {
     height: 8px;
     background: rgba(65, 16, 243, 0.929);
-    margin: 20px 20px 20px 20px;
+    margin: 15px;
     border-radius: 4px;
     overflow: hidden;
 }
@@ -243,81 +272,31 @@ body {
     transition: width 0.3s ease;
 }
 
-/* Quiz Section */
-.quiz-container {
-    max-width: 400px; /* Adjusted width for better alignment */
-    margin: 0;
-    background: #ffffff; /* White background for the form */
-    border-radius: 15px; /* Rounded corners */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-    padding: 0px 20px 10px 20px; /* Added padding for spacing */
-    color: #333; /* Text color */
-}
-
-/* Form Header */
-.quiz-container h2 {
-    font-size: 1.8rem; /* Larger font size for the title */
-    font-weight: bold;
-    color: #333; /* Darker text color */
-    margin-bottom: 10px; /* Spacing below the title */
-    text-align: center; /* Center-align the title */
-}
-
-.quiz-container p {
-    font-size: 1rem; /* Subtle description text */
-    color: #666;
-    text-align: center; /* Center-align the description */
-    margin-bottom: 20px; /* Spacing below the description */
-}
-
-/* Form Group */
-.form-group {
-    margin-bottom: 20px; /* Spacing between form fields */
-}
-
-.form-group label {
-    display: block;
-    font-size: 1rem;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 5px; /* Spacing below the label */
-}
-
-.form-group input,
-.form-group select {
-    width: 100%; /* Full width for inputs and select */
-    padding: 10px 15px; /* Padding for better spacing */
-    border: 1px solid #ccc; /* Light border */
-    border-radius: 8px; /* Rounded corners */
-    font-size: 1rem; /* Font size for inputs */
-    color: #333; /* Text color */
-    background: #f9f9f9; /* Light background for inputs */
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); /* Subtle inner shadow */
-}
-
-.form-group input:focus,
-.form-group select:focus {
-    border-color: #4361ee; /* Blue border on focus */
-    outline: none; /* Remove default outline */
-    background: #fff; /* White background on focus */
-    box-shadow: 0 0 5px rgba(67, 97, 238, 0.5); /* Glow effect */
-}
-
-/* Button */
-.btn {
-    background: #e63946; /* Red background for the button */
-    color: white; /* White text */
-    border: none;
-    padding: 15px 30px; /* Padding for the button */
-    border-radius: 8px; /* Rounded corners */
-    cursor: pointer;
-    font-size: 1rem; /* Font size for the button */
-    font-weight: bold;
+/* Results Container */
+.results-container {
+    padding: clamp(15px, 4vw, 20px);
     text-align: center;
-    width: 100%; /* Full width button */
-    transition: background 0.3s ease; /* Smooth hover effect */
 }
 
-.btn:hover {
-    background: #d62839; /* Darker red on hover */
+/* Media Queries */
+@media screen and (max-width: 480px) {
+    #app-container {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0;
+    }
+    
+    .navbar {
+        max-width: 100%;
+    }
+    
+    .section {
+        padding: 10px;
+    }
+}
+
+@supports (padding: max(0px)) {
+    .navbar {
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+    }
 }
