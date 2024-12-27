@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History Quiz App</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- App Container -->
+    <div id="app-container">
+        <!-- Logo -->
+        <header class="logo">
+            <h1>İngiliz Kültür Tarihi</h1>
+        </header>
+
+        <!-- Home Section -->
+        <div id="home" class="section active">
+            <div class="home-content">
+                <h1 class="home-title">Welcome Aboard</h1>
+                <p class="home-description" style="line-height: 21px;">
+                    If you're aiming for a score of 90-100 on the final English Cultural History exam, you're in the right place. I created this app out of sheer dedication to mastering English history, a tool born from countless hours of meticulous study and preparation. After achieving an impressive 93 out of 100 on the midterm exam, I realized this app had the power to not only transform my results but also help others reach their highest potential.
+
+                    Now, I'm sharing it with you and my classmates, so we can all excel together and make the final exam a triumph.
+                </p>
+                <p style="margin: 35px; font-size: 14px; color: rgb(147, 147, 147);">
+                    This app is created and designed by <a href="https://www.instagram.com/hashmatullahnaybi28/" style="font-weight: 500;">Hashmatullah Naybi</a>, as a tribute to the second class year, 2024.
+                </p>
+            </div>
+        </div>
+
+        <!-- Study Guide Section -->
+        <div id="study-guide" class="section active">
+            <div class="study-guide" id="study-guide-content">
+                <!-- Questions will be populated here -->
+                <h2 style="color:#4361ee; text-align: center;">Study Guide</h2>
+                <p style="margin: 10px 0px 30px 0px; color: rgb(125, 124, 124); text-align: center;">Here are the questions and their correct answers for your review:</p>
+            </div>
+        </div>
+
+        <!-- Quiz Section -->
+        <div id="quiz" class="section">
+            <!-- Student Info Form -->
+            <div id="student-form" class="quiz-container">
+                <h2 style="color: #4361ee; font-size: 1.5em;">Start Your Quiz</h2>
+                <p>Fill in your details to begin the quiz.</p>
+                <div class="form-group">
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName" placeholder="Enter your first name" required>
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName" placeholder="Enter your last name" required>
+                </div>
+                <div class="form-group">
+                    <label for="questionCount">Number of Questions</label>
+                    <select id="questionCount" required>
+                        <option value="40">40 Questions</option>
+                        <option value="60">60 Questions</option>
+                        <option value="100">100 Questions</option>
+                        <option value="all">All Questions</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="startQuiz()">Start Quiz</button>
+            </div>
+
+            <!-- Quiz Content (Initially Hidden) -->
+            <div id="quiz-content" class="quiz-container" style="display: none;">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress"></div>
+                </div>
+                <div class="question-card">
+                    <div id="questionNumber"></div>
+                    <div id="questionText"></div>
+                    <div id="options"></div>
+                    <button class="btn" id="nextBtn" onclick="nextQuestion()" style="display: none;">Next Question</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="navbar">
+            <a href="#" class="nav-link " onclick="showSection('home')">
+                <i class="fas fa-home"></i>
+            </a>
+            <a href="#" class="nav-link" onclick="showSection('study-guide')">
+                <i class="fas fa-book"></i>
+            </a>
+            <a href="#" class="nav-link" onclick="showSection('quiz')">
+                <i class="fas fa-clipboard-list"></i>
+            </a>
+        </nav>
+    </div>
+
+    
+
+    
+
+    <script src="main.js"></script>
+</body>
+</html>
