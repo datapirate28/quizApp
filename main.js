@@ -4406,76 +4406,120 @@ let studentLastName = '';
 
 // Navigation Functions
 function showSection(sectionId) {
-    document.querySelectorAll('.section').forEach(section => {
+    // Hide all sections
+    const sections = document.querySelectorAll('.section');
+    sections.forEach(section => {
         section.classList.remove('active');
     });
-    document.getElementById(sectionId).classList.add('active');
     
-    if (sectionId === 'quiz') {
-        // Reset quiz view to show student form
-        document.getElementById('student-form').style.display = 'block';
-        document.getElementById('quiz-content').style.display = 'none';
-        // Clear previous inputs
-        document.getElementById('firstName').value = '';
-        document.getElementById('lastName').value = '';
-    } else if (sectionId === 'study-guide') {
+    // Show the selected section
+    const selectedSection = document.getElementById(sectionId);
+    if (selectedSection) {
+        selectedSection.classList.add('active');
+    }
+    
+    // Update active navigation link
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        link.classList.remove('active');
+    });
+    
+    // Find the link that called this function and mark it as active
+    const activeLink = document.querySelector(`.nav-link[onclick*="${sectionId}"]`);
+    if (activeLink) {
+        activeLink.classList.add('active');
+    }
+    
+    // If showing study guide, ensure it's populated
+    if (sectionId === 'study-guide') {
         populateStudyGuide();
+    }
+    
+    // Reset quiz section when navigating away
+    if (sectionId !== 'quiz' && document.getElementById('quiz-content').style.display === 'block') {
+        document.getElementById('quiz-content').style.display = 'none';
+        document.getElementById('student-form').style.display = 'block';
+        document.getElementById('results').style.display = 'none';
     }
 }
 
 // Study Guide Functions
 function populateStudyGuide() {
-    const container = document.getElementById('study-guide-content');
-
-    // Clear only the dynamically generated content, not the entire container
-    const dynamicContent = container.querySelectorAll('.question-item');
-    dynamicContent.forEach(item => item.remove());
-
-    // Dynamically add questions
-    allQuestions.forEach((q, index) => {
-        const questionDiv = document.createElement('div');
-        questionDiv.className = 'question-item';
+    const studyGuideContent = document.getElementById('study-guide-content');
+    
+    // Check if content already exists
+    if (studyGuideContent.querySelector('.question-item')) {
+        return; // Already populated
+    }
+    
+    // Create header content
+    const header = `
+        <h2>Study Guide</h2>
+        <p class="section-description">Here are the questions and their correct answers for your review:</p>
+    `;
+    
+    // Create questions content
+    let questionsContent = '';
+    
+    allQuestions.forEach((question, index) => {
+        const correctOptionIndex = question.correct;
+        const correctOption = question.options[correctOptionIndex];
         
-        let optionsHtml = '<ul class="options-list">';
-        q.options.forEach((option, i) => {
-            const isCorrect = i === q.correct;
-            optionsHtml += `
-                <li class="option-item ${isCorrect ? 'correct-answer' : ''}">
-                    ${option}
-                </li>
-            `;
-        });
-        optionsHtml += '</ul>';
-
-        questionDiv.innerHTML = `
-            <div class="question-text">
-                ${index + 1}. ${q.question}
+        questionsContent += `
+            <div class="question-item">
+                <div class="question-number"><i class="fas fa-graduation-cap"></i> Question ${index + 1}</div>
+                <div class="question-text">${question.question}</div>
+                <ul class="options-list">
+                    ${question.options.map((option, optIndex) => `
+                        <li class="option-item ${optIndex === correctOptionIndex ? 'correct-answer' : ''}">
+                            ${option}
+                            ${optIndex === correctOptionIndex ? '<i class="fas fa-check" style="float: right;"></i>' : ''}
+                        </li>
+                    `).join('')}
+                </ul>
             </div>
-            ${optionsHtml}
         `;
-        container.appendChild(questionDiv);
     });
+    
+    // Update the content
+    studyGuideContent.innerHTML = header + questionsContent;
 }
 
 // Quiz Functions
 function startQuiz() {
+    // Get student information
     const firstName = document.getElementById('firstName').value.trim();
     const lastName = document.getElementById('lastName').value.trim();
-    const questionCount = document.getElementById('questionCount').value;
-
+    
+    // Validate inputs
     if (!firstName || !lastName) {
-        alert('Please enter both first and last name');
+        alert('Please enter your first and last name.');
         return;
     }
-
+    
+    // Store student info
     studentFirstName = firstName;
     studentLastName = lastName;
-    selectedQuestionCount = questionCount; // Store the selected question count
-
+    
+    // Get question count
+    const questionCount = document.getElementById('questionCount').value;
+    selectedQuestionCount = questionCount;
+    
+    // Initialize quiz with selected question count
+    initializeQuiz(questionCount);
+    
+    // Hide student form and show quiz content
     document.getElementById('student-form').style.display = 'none';
     document.getElementById('quiz-content').style.display = 'block';
-
-    initializeQuiz(questionCount);
+    document.getElementById('results').style.display = 'none';
+    
+    // Reset quiz state
+    currentQuestionIndex = 0;
+    score = 0;
+    answered = false;
+    
+    // Show first question
+    showQuestion();
 }
 
 function initializeQuiz(questionCount) {
@@ -4518,67 +4562,80 @@ function initializeQuiz(questionCount) {
 }
 
 function showQuestion() {
-    answered = false;
-    const question = currentQuestions[currentQuestionIndex];
-    document.getElementById('questionNumber').textContent = 
-        `Question ${currentQuestionIndex + 1}/${currentQuestions.length}`;
-    document.getElementById('questionText').textContent = question.question;
+    answered = false; // Reset answered state for new question
+    const currentQuestion = currentQuestions[currentQuestionIndex];
+    document.getElementById('questionNumber').textContent = `Question ${currentQuestionIndex + 1} of ${currentQuestions.length}`;
+    document.getElementById('questionText').textContent = currentQuestion.question;
     
-    const optionsHtml = question.options.map((option, index) => `
-        <div class="option" onclick="selectOption(${index})">
-            ${option}
-        </div>
-    `).join('');
+    const optionsContainer = document.getElementById('options');
+    optionsContainer.innerHTML = '';
     
-    document.getElementById('options').innerHTML = optionsHtml;
+    // Calculate progress
+    const progressPercentage = ((currentQuestionIndex) / currentQuestions.length) * 100;
+    document.getElementById('progress').style.width = `${progressPercentage}%`;
+    
+    // Dynamically add options with animation delay
+    currentQuestion.options.forEach((option, index) => {
+        const optionElement = document.createElement('div');
+        optionElement.className = 'option';
+        optionElement.textContent = option;
+        optionElement.onclick = () => selectOption(index);
+        optionElement.style.setProperty('--index', index);
+        optionsContainer.appendChild(optionElement);
+    });
+    
+    // Hide next button initially
     document.getElementById('nextBtn').style.display = 'none';
-    
-    // Update progress bar
-    const progress = ((currentQuestionIndex + 1) / currentQuestions.length) * 100;
-    document.getElementById('progress').style.width = `${progress}%`;
 }
 
 function selectOption(selectedIndex) {
+    // If already answered, do nothing
     if (answered) return;
+    
+    const currentQuestion = currentQuestions[currentQuestionIndex];
+    const optionsElements = document.querySelectorAll('.option');
+    
+    // Mark as answered
     answered = true;
-
-    const question = currentQuestions[currentQuestionIndex];
-    const options = document.querySelectorAll('.option');
-
-    options[selectedIndex].classList.add(
-        selectedIndex === question.correct ? 'correct' : 'wrong'
-    );
-
-    if (selectedIndex === question.correct) {
+    
+    // Highlight correct and wrong answers
+    optionsElements.forEach((option, index) => {
+        option.classList.remove('selected');
+        option.style.pointerEvents = 'none'; // Prevent further selection
+        
+        if (index === currentQuestion.correct) {
+            option.classList.add('correct');
+            // Add checkmark icon to correct answer
+            option.innerHTML = `${option.textContent} <i class="fas fa-check-circle" style="float: right;"></i>`;
+        } 
+        
+        if (index === selectedIndex && selectedIndex !== currentQuestion.correct) {
+            option.classList.add('wrong');
+            // Add X icon to wrong answer
+            option.innerHTML = `${option.textContent} <i class="fas fa-times-circle" style="float: right;"></i>`;
+        }
+    });
+    
+    // Update score if correct
+    if (selectedIndex === currentQuestion.correct) {
         score++;
     }
-
-    options[question.correct].classList.add('correct');
-    options.forEach(option => option.style.pointerEvents = 'none');
     
     // Check if this is the last question
     if (currentQuestionIndex === currentQuestions.length - 1) {
         document.getElementById('nextBtn').style.display = 'none';
         
         // Create Show Results button
-        const showResultsDiv = document.createElement('div');
-        showResultsDiv.className = 'option';
-        showResultsDiv.textContent = 'Show Results';
-        showResultsDiv.style.backgroundColor = '#2e7d32';
-        showResultsDiv.style.color = 'white';
-        showResultsDiv.style.marginTop = '20px';
-        showResultsDiv.style.textAlign = 'center';
-        showResultsDiv.style.cursor = 'pointer'; // Add cursor pointer
+        const showResultsBtn = document.createElement('button');
+        showResultsBtn.className = 'btn try-again-btn';
+        showResultsBtn.innerHTML = '<i class="fas fa-poll"></i> Show Results';
+        showResultsBtn.onclick = showResults;
         
-        // Add click event listener
-        showResultsDiv.onclick = function() {
-            showResults();
-        };
-
         // Add the button to the DOM
-        const optionsContainer = document.getElementById('options');
-        optionsContainer.appendChild(showResultsDiv);
+        const questionCard = document.querySelector('.question-card');
+        questionCard.appendChild(showResultsBtn);
     } else {
+        // Show next button
         document.getElementById('nextBtn').style.display = 'block';
     }
 }
@@ -4591,50 +4648,56 @@ function nextQuestion() {
 
 
 function showResults() {
-    const quizContent = document.getElementById('quiz-content');
-    if (quizContent) {
-        const totalQuestions = currentQuestions.length;
-        const correctAnswers = score;
-        const incorrectAnswers = totalQuestions - correctAnswers;
-        const percentage = (score / totalQuestions) * 100;
-
-        quizContent.innerHTML = `
-            <div class="question-card">
-                <div class="results-container" style="background: #ffffff; border-radius: 10px; ; padding: 20px; text-align: center;">
-                    <h3 style="color: #4361ee; font-size: 1.5rem; margin-bottom: 20px;">Results for ${studentFirstName} ${studentLastName}</h3>
-                    <div class="results-detail" style="text-align: left; margin-bottom: 20px;">
-                        <p>Total Questions: <span class="score-highlight" style="font-weight: bold; color: #4361ee;">${totalQuestions}</span></p>
-                        <p>Correct Answers: <span class="score-highlight" style="font-weight: bold; color: #4361ee;">${correctAnswers}</span></p>
-                        <p>Incorrect Answers: <span class="score-highlight" style="font-weight: bold; color: #4361ee;">${incorrectAnswers}</span></p>
-                        <p>Score: <span class="score-highlight" style="font-weight: bold; color: #4361ee;">${percentage.toFixed(1)}%</span></p>
-                    </div>
-                    <div class="results-buttons" style="display: flex; flex-direction: column; gap: 10px;">
-                        <button class="btn" onclick="tryAgain()" style="background: #4361ee; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 1rem;">Try Again</button>
-                        <button class="btn btn-secondary" onclick="showSection('home')" style="background: #666; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 1rem;">Back to Home</button>
-                    </div>
-                </div>
-            </div>
-        `;
+    // Hide quiz content
+    document.getElementById('quiz-content').style.display = 'none';
+    
+    // Show results container
+    const resultsContainer = document.getElementById('results');
+    resultsContainer.style.display = 'block';
+    
+    // Update score
+    const scoreDisplay = document.getElementById('score');
+    scoreDisplay.textContent = `${score}/${currentQuestions.length}`;
+    
+    // Calculate percentage
+    const percentage = Math.round((score / currentQuestions.length) * 100);
+    
+    // Update result message based on score
+    const resultMessage = document.getElementById('resultMessage');
+    
+    if (percentage >= 90) {
+        resultMessage.innerHTML = `<span style="color: var(--success-color);">Outstanding!</span> You're mastering English Cultural History!`;
+        scoreDisplay.style.color = 'var(--success-color)';
+    } else if (percentage >= 80) {
+        resultMessage.innerHTML = `<span style="color: var(--success-color);">Great job!</span> You have a strong grasp of the material.`;
+        scoreDisplay.style.color = 'var(--success-color)';
+    } else if (percentage >= 70) {
+        resultMessage.innerHTML = `<span style="color: var(--primary-color);">Good work!</span> You're on the right track.`;
+        scoreDisplay.style.color = 'var(--primary-color)';
+    } else if (percentage >= 60) {
+        resultMessage.innerHTML = `<span style="color: var(--primary-color);">Not bad!</span> A bit more study and you'll improve.`;
+        scoreDisplay.style.color = 'var(--primary-color)';
+    } else {
+        resultMessage.innerHTML = `<span style="color: var(--error-color);">Keep studying!</span> Review the material and try again.`;
+        scoreDisplay.style.color = 'var(--error-color)';
     }
+    
+    // Store student name and score
+    const studentName = `${document.getElementById('firstName').value} ${document.getElementById('lastName').value}`;
 }
 
 function tryAgain() {
-    // Reset the quiz content to its original structure
-    const quizContent = document.getElementById('quiz-content');
-    quizContent.innerHTML = `
-        <div class="progress-bar">
-            <div id="progress" style="width: 0%"></div>
-        </div>
-        <div class="question-card">
-            <div id="questionNumber"></div>
-            <div id="questionText"></div>
-            <div id="options"></div>
-            <button id="nextBtn" onclick="nextQuestion()" style="display: none; background: #4361ee; color: white; border: none; padding: 15px 30px; border-radius: 10px; cursor: pointer; width: 100%; font-size: 16px; margin-top: 20px;">Next Question</button>
-        </div>
-    `;
+    // Reset quiz state
+    currentQuestionIndex = 0;
+    score = 0;
+    answered = false;
     
-    // Reinitialize the quiz with the previously selected question count
-    initializeQuiz(selectedQuestionCount);
+    // Hide results
+    document.getElementById('results').style.display = 'none';
+    
+    // Show student form
+    document.getElementById('student-form').style.display = 'block';
+    document.getElementById('quiz-content').style.display = 'none';
 }
 
 // Initialize the page
