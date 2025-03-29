@@ -186,9 +186,13 @@ body {
 
 .home-description {
     color: var(--text-light);
-    font-size: clamp(0.95rem, 3vw, 1.05rem);
-    line-height: 1.7;
-    margin-top: 20px;
+    font-size: clamp(0.95rem, 3vw, 0.50rem);
+    line-height: 1.30;
+    margin-top: 15px;
+}
+
+.home-description p {
+    margin-top: 15px !important;
 }
 
 /* Home Section - Author Info */
